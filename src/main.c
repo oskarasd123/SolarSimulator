@@ -10,6 +10,8 @@
 #include "graphics/vertex.h"
 #include "graphics/shader.h"
 #include "graphics/texture.h"
+#include "graphics/buffers.h"
+#include "graphics/vertex_array.h"
 
 static void message_callback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, GLchar const* message, void const* user_param);
 
@@ -53,7 +55,7 @@ int main(int argc, char** argv)
 
     glEnable(GL_DEBUG_OUTPUT);
     glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
-    glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DEBUG_SEVERITY_NOTIFICATION, 0, NULL, GL_FALSE);
+    glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, NULL, GL_FALSE);
     glDebugMessageCallback(message_callback, NULL);
 
     const char* vendor_str = (const char*)glGetString(GL_VENDOR);
@@ -73,12 +75,23 @@ int main(int argc, char** argv)
         1, 2, 3
     };
 
-    uint32_t buffers[2];
-    glCreateBuffers(2, buffers);
-    glNamedBufferData(buffers[BUFFER_ID_VBO], sizeof(vertices), vertices, GL_STATIC_DRAW);
-    glNamedBufferData(buffers[BUFFER_ID_IBO], sizeof(indices), indices, GL_STATIC_DRAW);
+    buffer_handle_t buffers[2];
+    size_t sizes[2] = {sizeof(vertices), sizeof(indices)};
+    void* data[2] = {vertices, indices};
+    buffers_init(2, buffers, sizes, data);
 
-    uint32_t VAO;
+    struct vertex_array vao;
+    vertex_array_init(&vao);
+
+    struct vertex_layout layout;
+    vertex_layout_init(&layout);
+    vertex_layout_add(&layout, 2, GL_FLOAT, false, 0);
+    vertex_layout_add(&layout, 2, GL_FLOAT, false, offsetof(struct vertex, uv));
+    
+    vertex_array_add(&vao, &layout);
+    vertex_array_bind(&vao);
+
+    /*uint32_t VAO;
     glCreateVertexArrays(1, &VAO);
 
     glVertexArrayVertexBuffer(VAO, 0, buffers[BUFFER_ID_VBO], 0, sizeof(struct vertex));
@@ -91,7 +104,7 @@ int main(int argc, char** argv)
     glEnableVertexArrayAttrib(VAO, 1);
 
     glVertexArrayAttribBinding(VAO, 0, 0);
-    glVertexArrayAttribBinding(VAO, 1, 0);
+    glVertexArrayAttribBinding(VAO, 1, 0);*/
 
     texture_t texture = texture_init("wall.jpg");
     texture_bind(texture, 0);
@@ -102,7 +115,6 @@ int main(int argc, char** argv)
     shader_set_1i(&shader, "u_Texture", 0);
 
     glClearColor(0.2f, 0.3f, 0.8f, 1.0f);
-    glBindVertexArray(VAO);
     
     while (!glfwWindowShouldClose(window))
     {
@@ -118,10 +130,10 @@ int main(int argc, char** argv)
         glfwPollEvents();
     }
 
-    texture_delete(texture);
-    shader_delete(&shader);
-    glDeleteVertexArrays(1, &VAO);
-    glDeleteBuffers(2, buffers);
+    texture_free(texture);
+    shader_free(&shader);
+    vertex_array_free(&vao);
+    buffers_free(2, buffers);
 
     glfwDestroyWindow(window);
     glfwTerminate();

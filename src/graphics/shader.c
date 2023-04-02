@@ -46,7 +46,7 @@ void shader_bind(struct shader* shader)
     glUseProgram(shader->handle);
 }
 
-void shader_delete(struct shader* shader)
+void shader_free(struct shader* shader)
 {
     glDeleteProgram(shader->handle);
 }

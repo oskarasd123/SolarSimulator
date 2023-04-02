@@ -7,11 +7,6 @@ struct vec2
 {
     float x;
     float y;
-
-#if VEC2_USE_SIMD
-    /* Padding to align it to 128 bits */
-    float _[2];
-#endif
 };
 
 void vec2_init(struct vec2* vec, float x, float y);

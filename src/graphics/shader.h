@@ -16,7 +16,7 @@ struct shader
 
 void shader_init(struct shader* shader, const char* shader_file_path);
 void shader_bind(struct shader* shader);
-void shader_delete(struct shader* shader);
+void shader_free(struct shader* shader);
 
 void shader_set_1i(struct shader* shader, const char* name, int value);
 void shader_set_2f(struct shader* shader, const char* name, const struct vec2* value);

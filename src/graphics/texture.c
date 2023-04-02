@@ -29,7 +29,7 @@ texture_t texture_init(const char* texture_path)
     return texture;
 }
 
-void texture_delete(texture_t texture)
+void texture_free(texture_t texture)
 {
     glDeleteTextures(1, &texture);
 }
