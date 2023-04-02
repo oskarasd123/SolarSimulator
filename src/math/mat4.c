@@ -7,6 +7,7 @@
 
 /* Shame */
 #define M_PI 3.14159265358979323846
+#define M_TAU 6.283185307179586
 
 static float to_radians(float degrees);
 
@@ -124,8 +125,11 @@ void mat4_translation(struct mat4* matrix, const struct vec3* translation)
     mat4_mul(matrix, &result);
 }
 
-void mat4_rotation(struct mat4* matrix, float angle, const struct vec3* axis)
+void mat4_rotation(struct mat4* matrix, const struct vec3* angles)
 {
+    float angle = vec3_magnitude(angles);
+    struct vec3 axis = vec3_normalize(angles);
+
     struct mat4 result;
     mat4_identity(&result);
 
@@ -134,9 +138,9 @@ void mat4_rotation(struct mat4* matrix, float angle, const struct vec3* axis)
     const float s = sinf(r);
     const float omc = 1.0f - c;
 
-    const float x = axis->x;
-    const float y = axis->y;
-    const float z = axis->z;
+    const float x = axis.x;
+    const float y = axis.y;
+    const float z = axis.z;
 
     result.elements[0 + 0 * 4] = x * x * omc + c;
     result.elements[1 + 0 * 4] = y * x * omc + z * s;
@@ -167,5 +171,7 @@ void mat4_scale(struct mat4* matrix, const struct vec3* scale)
 
 static float to_radians(float degrees)
 {
-    return degrees * (M_PI / 180.0f);
+    float result = degrees * (M_PI / 180.0f);
+    while (result > M_TAU) result -= M_TAU;
+    return result;
 }
