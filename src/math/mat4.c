@@ -171,7 +171,5 @@ void mat4_scale(struct mat4* matrix, const struct vec3* scale)
 
 static float to_radians(float degrees)
 {
-    float result = degrees * (M_PI / 180.0f);
-    while (result > M_TAU) result -= M_TAU;
-    return result;
+    return degrees * (M_PI / 180.0f);
 }
