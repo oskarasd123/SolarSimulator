@@ -7,11 +7,9 @@
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 
-#define STB_IMAGE_IMPLEMENTATION
-#include "../vendor/stb_image.h"
-
 #include "graphics/vertex.h"
 #include "graphics/shader.h"
+#include "graphics/texture.h"
 
 static void message_callback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, GLchar const* message, void const* user_param);
 
@@ -95,26 +93,8 @@ int main(int argc, char** argv)
     glVertexArrayAttribBinding(VAO, 0, 0);
     glVertexArrayAttribBinding(VAO, 1, 0);
 
-    uint32_t texture;
-    glCreateTextures(GL_TEXTURE_2D, 1, &texture);
-    glTextureParameteri(texture, GL_TEXTURE_WRAP_S, GL_REPEAT);
-    glTextureParameteri(texture, GL_TEXTURE_WRAP_T, GL_REPEAT);
-    glTextureParameteri(texture, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTextureParameteri(texture, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-    int width, height, channels;
-    uint8_t* data = stbi_load("wall.jpg", &width, &height, &channels, 0);
-    if (data) {
-        glTextureStorage2D(texture, 1, GL_RGB8, width, height);
-        glTextureSubImage2D(texture, 0, 0, 0, width, height, GL_RGB, GL_UNSIGNED_BYTE, data);
-        glGenerateTextureMipmap(texture);
-        glBindTextureUnit(0, texture);
-    } else {
-        fputs("Failed to load the texture!\n", stderr);
-        abort();
-    }
-
-    stbi_image_free(data);
+    texture_handle_t texture = texture_init("wall.jpg");
+    texture_bind(texture, 0);
 
     struct shader shader;
     shader_init(&shader, "basic.shader");
@@ -138,7 +118,7 @@ int main(int argc, char** argv)
         glfwPollEvents();
     }
 
-    glDeleteTextures(1, &texture);
+    texture_delete(texture);
     shader_delete(&shader);
     glDeleteVertexArrays(1, &VAO);
     glDeleteBuffers(2, buffers);
