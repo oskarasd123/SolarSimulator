@@ -9,7 +9,7 @@
 struct vertex_element
 {
     uint32_t attribute_index;
-    uint32_t components;
+    int32_t components;
     uint32_t type;
     bool normalized;
     uint32_t offset;
@@ -33,7 +33,7 @@ struct vertex_array
 
 void vertex_layout_init(struct vertex_layout* layout);
 void vertex_layout_free(struct vertex_layout* layout);
-void vertex_layout_add(struct vertex_layout* layout, uint32_t components, uint32_t type, bool normalized, uint32_t offset);
+void vertex_layout_add(struct vertex_layout* layout, int32_t components, uint32_t type, bool normalized, uint32_t offset);
 
 void vertex_array_init(struct vertex_array* vao);
 void vertex_array_free(struct vertex_array* vao);

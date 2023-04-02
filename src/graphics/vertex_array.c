@@ -27,9 +27,8 @@ void vertex_layout_free(struct vertex_layout* layout)
     free(layout->data);
 }
 
-void vertex_layout_add(struct vertex_layout* layout, uint32_t components, uint32_t type, bool normalized, uint32_t offset)
+void vertex_layout_add(struct vertex_layout* layout, int32_t components, uint32_t type, bool normalized, uint32_t offset)
 {
-    printf("%d;%d;%c;%d\n", components, type, normalized ? 'Y' : 'N', offset);
     struct vertex_element element;
     element.attribute_index = layout->index++;
     element.components = components;
@@ -64,10 +63,8 @@ void vertex_array_bind(struct vertex_array* vao)
 void vertex_array_add(struct vertex_array* vao, struct vertex_layout* layout)
 {
     vao->layout = layout;
-
     for (uint32_t i = 0; i < layout->size; i++) {
         const struct vertex_element element = layout->data[i];
-        printf("%dth element.\nAttribute index: %d\nComponents: %d\nType: %d\nNormalized: %c\nOffset: %d\n", element.attribute_index, element.components, element.type, (element.normalized ? 'Y' : 'N'), element.offset);
         glVertexArrayAttribFormat(vao->handle, element.attribute_index, element.components, element.type, element.normalized ? GL_TRUE : GL_FALSE, element.offset);
         glEnableVertexArrayAttrib(vao->handle, element.attribute_index);
         glVertexArrayAttribBinding(vao->handle, element.attribute_index, 0);

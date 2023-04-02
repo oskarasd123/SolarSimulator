@@ -90,21 +90,7 @@ int main(int argc, char** argv)
     
     vertex_array_add(&vao, &layout);
     vertex_array_bind(&vao);
-
-    /*uint32_t VAO;
-    glCreateVertexArrays(1, &VAO);
-
-    glVertexArrayVertexBuffer(VAO, 0, buffers[BUFFER_ID_VBO], 0, sizeof(struct vertex));
-    glVertexArrayElementBuffer(VAO, buffers[BUFFER_ID_IBO]);
-
-    glVertexArrayAttribFormat(VAO, 0, 2, GL_FLOAT, GL_FALSE, 0);
-    glVertexArrayAttribFormat(VAO, 1, 2, GL_FLOAT, GL_FALSE, offsetof(struct vertex, uv));
-
-    glEnableVertexArrayAttrib(VAO, 0);
-    glEnableVertexArrayAttrib(VAO, 1);
-
-    glVertexArrayAttribBinding(VAO, 0, 0);
-    glVertexArrayAttribBinding(VAO, 1, 0);*/
+    vertex_array_set(&vao, sizeof(struct vertex), buffers[BUFFER_ID_VBO], buffers[BUFFER_ID_IBO]);
 
     texture_t texture = texture_init("wall.jpg");
     texture_bind(texture, 0);
