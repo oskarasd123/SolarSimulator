@@ -13,6 +13,7 @@
 #include "vertex.h"
 
 static void message_callback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, GLchar const* message, void const* user_param);
+static int starts_with(const char* a, const char* b);
 
 int main(int argc, char** argv)
 {
@@ -105,9 +106,9 @@ int main(int argc, char** argv)
     char line[256];
     while (fgets(line, sizeof(line), file)) 
     {
-        if (strncmp(line, "#shader vertex", 14) == 0) {
+        if (starts_with(line, "#shader vertex") == 0) {
             shader_write_index = 0;
-        } else if (strncmp(line, "#shader fragment", 15) == 0) {
+        } else if (starts_with(line, "#shader fragment") == 0) {
             shader_write_index = 1;
         } else {
             if (shader_write_index < 0) {
@@ -263,4 +264,9 @@ static void message_callback(GLenum source, GLenum type, GLuint id, GLenum sever
     }
 
     printf("[%s][%s][%s]: %s\n", src_str, type_str, severity_str, message);
+}
+
+static int starts_with(const char* a, const char* b)
+{
+    return strncmp(a, b, strlen(b));
 }
