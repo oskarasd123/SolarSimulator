@@ -29,16 +29,16 @@ void mat4_identity(struct mat4* matrix)
 void mat4_mul(struct mat4* left, const struct mat4* right)
 {
     /* TODO: Vectorize (SIMD) */
-    for (uint32_t y = 0; y < 4; ++y)
+    for (uint32_t row = 0; row < 4; ++row)
     {
-        for (uint32_t x = 0; x < 4; ++x)
+        for (uint32_t col = 0; col < 4; ++col)
         {
             float sum = 0.0f;
             for (uint32_t e = 0; e < 4; ++e)
             {
-                sum += left->elements[x + e * 4] * right->elements[e + y * 4];
+                sum += left->elements[e + row * 4] * right->elements[col + e * 4];
             }
-            left->elements[x + y * 4] = sum;
+            left->elements[col + row * 4] = sum;
         }
     }
 }
@@ -143,15 +143,15 @@ void mat4_rotation(struct mat4* matrix, const struct vec3* angles)
     const float z = axis.z;
 
     result.elements[0 + 0 * 4] = x * x * omc + c;
-    result.elements[1 + 0 * 4] = y * x * omc + z * s;
-    result.elements[2 + 0 * 4] = x * z * omc - y * s;
+    result.elements[0 + 1 * 4] = y * x * omc + z * s;
+    result.elements[0 + 2 * 4] = x * z * omc - y * s;
 
-    result.elements[0 + 1 * 4] = x * y * omc - z * s;
+    result.elements[1 + 0 * 4] = x * y * omc - z * s;
     result.elements[1 + 1 * 4] = y * y * omc + c;
-    result.elements[2 + 1 * 4] = y * z * omc + x * s;
+    result.elements[1 + 2 * 4] = y * z * omc + x * s;
 
-    result.elements[0 + 2 * 4] = x * z * omc + y * s;
-    result.elements[1 + 2 * 4] = y * z * omc - x * s;
+    result.elements[2 + 0 * 4] = x * z * omc + y * s;
+    result.elements[2 + 1 * 4] = y * z * omc - x * s;
     result.elements[2 + 2 * 4] = z * z * omc + c;
 
     mat4_mul(matrix, &result);

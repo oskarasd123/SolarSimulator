@@ -134,6 +134,10 @@ int main(int argc, char** argv)
         struct mat4 transform;
         mat4_identity(&transform);
         
+        struct vec3 scale;
+        vec3_init(&scale, 1.0f, 1.0f, 1.0f);
+        mat4_scale(&transform, &scale);
+
         struct vec3 translation;
         vec3_init(&translation, 0.0f, 0.0f, 0.0f);
         mat4_translation(&transform, &translation);
@@ -141,10 +145,6 @@ int main(int argc, char** argv)
         struct vec3 axis;
         vec3_init(&axis, 0.0f, 0.0f, glfwGetTime() * 100.0f);
         mat4_rotation(&transform, &axis);
-
-        struct vec3 scale;
-        vec3_init(&scale, 1.0f, 1.0f, 1.0f);
-        mat4_scale(&transform, &scale);
 
         shader_set_mat4(&shader, "u_Transform", &transform);
 
