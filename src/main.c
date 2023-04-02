@@ -10,48 +10,9 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include "vendor/stb_image.h"
 
-static void message_callback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, GLchar const* message, void const* user_param)
-{
-    (void) id;
-    (void) length;
-    (void) user_param;
+#include "vertex.h"
 
-	const char* src_str;
-    switch (source)
-	{
-    case GL_DEBUG_SOURCE_API: src_str = "API"; break;
-    case GL_DEBUG_SOURCE_WINDOW_SYSTEM: src_str = "WINDOW SYSTEM"; break;
-    case GL_DEBUG_SOURCE_SHADER_COMPILER: src_str = "SHADER COMPILER"; break;
-    case GL_DEBUG_SOURCE_THIRD_PARTY: src_str = "THIRD PARTY"; break;
-    case GL_DEBUG_SOURCE_APPLICATION: src_str = "APPLICATION"; break;
-    case GL_DEBUG_SOURCE_OTHER: src_str = "OTHER"; break;
-    default: src_str = "UNKNOWN"; break;
-	}
-
-	const char* type_str;
-    switch (type)
-    {
-    case GL_DEBUG_TYPE_ERROR: type_str = "ERROR"; break;
-    case GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR: type_str = "DEPRECATED_BEHAVIOR"; break;
-    case GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR: type_str = "UNDEFINED_BEHAVIOR"; break;
-    case GL_DEBUG_TYPE_PORTABILITY: type_str = "PORTABILITY"; break;
-    case GL_DEBUG_TYPE_PERFORMANCE: type_str = "PERFORMANCE"; break;
-    case GL_DEBUG_TYPE_MARKER: type_str = "MARKER"; break;
-    case GL_DEBUG_TYPE_OTHER: type_str = "OTHER"; break;
-    default: type_str = "UNKNOWN"; break;
-    }
-
-	const char* severity_str;
-    switch (severity) {
-    case GL_DEBUG_SEVERITY_NOTIFICATION: severity_str = "NOTIFICATION"; break;
-    case GL_DEBUG_SEVERITY_LOW: severity_str = "LOW"; break;
-    case GL_DEBUG_SEVERITY_MEDIUM: severity_str = "MEDIUM"; break;
-    case GL_DEBUG_SEVERITY_HIGH: severity_str = "HIGH"; break;
-    default: severity_str = "UNKNOWN"; break;
-    }
-
-    printf("[%s][%s][%s]: %s\n", src_str, type_str, severity_str, message);
-}
+static void message_callback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, GLchar const* message, void const* user_param);
 
 int main(int argc, char** argv)
 {
@@ -95,12 +56,11 @@ int main(int argc, char** argv)
     const char* renderer_str = (const char*)glGetString(GL_RENDERER);
     printf("Vendor: %s\nVersion: %s\nRenderer: %s\n", vendor_str, version_str, renderer_str);
 
-    float vertices[] = {
-        /* Position       UV    */
-         0.5f,  0.5f,  1.0f, 1.0f,
-         0.5f, -0.5f,  1.0f, 0.0f,
-        -0.5f, -0.5f,  0.0f, 0.0f,
-        -0.5f,  0.5f,  0.0f, 1.0f
+    struct vertex vertices[] = {
+        {.pos = {.x =  0.5f, .y =  0.5f}, .uv = {.x = 1.0f, .y = 1.0f}},
+        {.pos = {.x =  0.5f, .y = -0.5f}, .uv = {.x = 1.0f, .y = 0.0f}},
+        {.pos = {.x = -0.5f, .y = -0.5f}, .uv = {.x = 0.0f, .y = 0.0f}},
+        {.pos = {.x = -0.5f, .y =  0.5f}, .uv = {.x = 0.0f, .y = 1.0f}}
     };
 
     uint32_t indices[] = {
@@ -119,11 +79,11 @@ int main(int argc, char** argv)
     uint32_t VAO;
     glCreateVertexArrays(1, &VAO);
 
-    glVertexArrayVertexBuffer(VAO, 0, VBO, 0, sizeof(float) * 4);
+    glVertexArrayVertexBuffer(VAO, 0, VBO, 0, sizeof(struct vertex));
     glVertexArrayElementBuffer(VAO, IBO);
 
     glVertexArrayAttribFormat(VAO, 0, 2, GL_FLOAT, GL_FALSE, 0);
-    glVertexArrayAttribFormat(VAO, 1, 2, GL_FLOAT, GL_FALSE, 2*sizeof(float));
+    glVertexArrayAttribFormat(VAO, 1, 2, GL_FLOAT, GL_FALSE, offsetof(struct vertex, uv));
 
     glEnableVertexArrayAttrib(VAO, 0);
     glEnableVertexArrayAttrib(VAO, 1);
@@ -260,4 +220,47 @@ int main(int argc, char** argv)
     glfwTerminate();
 
     return EXIT_SUCCESS;
+}
+
+static void message_callback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, GLchar const* message, void const* user_param)
+{
+    (void) id;
+    (void) length;
+    (void) user_param;
+
+	const char* src_str;
+    switch (source)
+	{
+    case GL_DEBUG_SOURCE_API: src_str = "API"; break;
+    case GL_DEBUG_SOURCE_WINDOW_SYSTEM: src_str = "WINDOW SYSTEM"; break;
+    case GL_DEBUG_SOURCE_SHADER_COMPILER: src_str = "SHADER COMPILER"; break;
+    case GL_DEBUG_SOURCE_THIRD_PARTY: src_str = "THIRD PARTY"; break;
+    case GL_DEBUG_SOURCE_APPLICATION: src_str = "APPLICATION"; break;
+    case GL_DEBUG_SOURCE_OTHER: src_str = "OTHER"; break;
+    default: src_str = "UNKNOWN"; break;
+	}
+
+	const char* type_str;
+    switch (type)
+    {
+    case GL_DEBUG_TYPE_ERROR: type_str = "ERROR"; break;
+    case GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR: type_str = "DEPRECATED_BEHAVIOR"; break;
+    case GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR: type_str = "UNDEFINED_BEHAVIOR"; break;
+    case GL_DEBUG_TYPE_PORTABILITY: type_str = "PORTABILITY"; break;
+    case GL_DEBUG_TYPE_PERFORMANCE: type_str = "PERFORMANCE"; break;
+    case GL_DEBUG_TYPE_MARKER: type_str = "MARKER"; break;
+    case GL_DEBUG_TYPE_OTHER: type_str = "OTHER"; break;
+    default: type_str = "UNKNOWN"; break;
+    }
+
+	const char* severity_str;
+    switch (severity) {
+    case GL_DEBUG_SEVERITY_NOTIFICATION: severity_str = "NOTIFICATION"; break;
+    case GL_DEBUG_SEVERITY_LOW: severity_str = "LOW"; break;
+    case GL_DEBUG_SEVERITY_MEDIUM: severity_str = "MEDIUM"; break;
+    case GL_DEBUG_SEVERITY_HIGH: severity_str = "HIGH"; break;
+    default: severity_str = "UNKNOWN"; break;
+    }
+
+    printf("[%s][%s][%s]: %s\n", src_str, type_str, severity_str, message);
 }
