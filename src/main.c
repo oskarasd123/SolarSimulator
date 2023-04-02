@@ -93,7 +93,7 @@ int main(int argc, char** argv)
     glVertexArrayAttribBinding(VAO, 0, 0);
     glVertexArrayAttribBinding(VAO, 1, 0);
 
-    texture_handle_t texture = texture_init("wall.jpg");
+    texture_t texture = texture_init("wall.jpg");
     texture_bind(texture, 0);
 
     struct shader shader;

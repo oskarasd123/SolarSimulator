@@ -5,7 +5,7 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include "../../vendor/stb_image.h"
 
-texture_handle_t texture_init(const char* texture_path)
+texture_t texture_init(const char* texture_path)
 {
     uint32_t texture;
     glCreateTextures(GL_TEXTURE_2D, 1, &texture);
@@ -29,12 +29,12 @@ texture_handle_t texture_init(const char* texture_path)
     return texture;
 }
 
-void texture_delete(texture_handle_t texture)
+void texture_delete(texture_t texture)
 {
     glDeleteTextures(1, &texture);
 }
 
-void texture_bind(texture_handle_t texture, uint32_t slot)
+void texture_bind(texture_t texture, uint32_t slot)
 {
     glBindTextureUnit(slot, texture);
 }
