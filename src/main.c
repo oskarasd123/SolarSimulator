@@ -138,9 +138,17 @@ int main(int argc, char** argv)
     {
         glClear(GL_COLOR_BUFFER_BIT);
 
+        struct mat4 transform;
+        mat4_identity(&transform);
+        struct vec3 translation;
+        vec3_init(&translation, 0.5f, -0.25f, 0.0f);
+        mat4_translation(&transform, &translation);
+        struct vec3 scale;
+        vec3_init(&scale, 4.0f, 4.0f, 4.0f);
+        mat4_scale(&transform, &scale);
         struct vec3 axis;
         vec3_init(&axis, 0.0f, 0.0f, 1.0f);
-        mat4_rotation(&transform, (float)glfwGetTime(), &axis);
+        mat4_rotation(&transform, (float)glfwGetTime() * 100.0f, &axis);
         shader_set_mat4(&shader, "u_Transform", &transform);
 
         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
