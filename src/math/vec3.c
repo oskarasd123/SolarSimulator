@@ -16,10 +16,10 @@ void vec3_init(struct vec3* vec, float x, float y, float z)
 void vec3_add(struct vec3* vec, struct vec3* other)
 {
 #if VEC3_USE_SIMD
-    __m128 a = _mm_load_ps((const float*)vec);
-    __m128 b = _mm_load_ps((const float*)other);
+    __m128 a = _mm_loadu_ps((const float*)vec);
+    __m128 b = _mm_loadu_ps((const float*)other);
     __m128 res = _mm_add_ps(a, b);
-    _mm_store_ps((float*)vec, res);
+    _mm_storeu_ps((float*)vec, res);
 #else
     vec->x += other->x;
     vec->y += other->y;
@@ -30,10 +30,10 @@ void vec3_add(struct vec3* vec, struct vec3* other)
 void vec3_sub(struct vec3* vec, struct vec3* other)
 {
 #if VEC3_USE_SIMD
-    __m128 a = _mm_load_ps((const float*)vec);
-    __m128 b = _mm_load_ps((const float*)other);
+    __m128 a = _mm_loadu_ps((const float*)vec);
+    __m128 b = _mm_loadu_ps((const float*)other);
     __m128 res = _mm_sub_ps(a, b);
-    _mm_store_ps((float*)vec, res);
+    _mm_storeu_ps((float*)vec, res);
 #else
     vec->x -= other->x;
     vec->y -= other->y;
@@ -44,10 +44,10 @@ void vec3_sub(struct vec3* vec, struct vec3* other)
 void vec3_mul(struct vec3* vec, struct vec3* other)
 {
 #if VEC3_USE_SIMD
-    __m128 a = _mm_load_ps((const float*)vec);
-    __m128 b = _mm_load_ps((const float*)other);
+    __m128 a = _mm_loadu_ps((const float*)vec);
+    __m128 b = _mm_loadu_ps((const float*)other);
     __m128 res = _mm_mul_ps(a, b);
-    _mm_store_ps((float*)vec, res);
+    _mm_storeu_ps((float*)vec, res);
 #else
     vec->x *= other->x;
     vec->y *= other->y;
@@ -58,10 +58,10 @@ void vec3_mul(struct vec3* vec, struct vec3* other)
 void vec3_div(struct vec3* vec, struct vec3* other)
 {
 #if VEC3_USE_SIMD
-    __m128 a = _mm_load_ps((const float*)vec);
-    __m128 b = _mm_load_ps((const float*)other);
+    __m128 a = _mm_loadu_ps((const float*)vec);
+    __m128 b = _mm_loadu_ps((const float*)other);
     __m128 res = _mm_div_ps(a, b);
-    _mm_store_ps((float*)vec, res);
+    _mm_storeu_ps((float*)vec, res);
 #else
     vec->x /= other->x;
     vec->y /= other->y;
@@ -93,6 +93,6 @@ void vec3_normalized(struct vec3* vec)
 struct vec3 vec3_cross(const struct vec3* left, const struct vec3* right)
 {
     struct vec3 result;
-    vec3_init(&result, left->y * right->z - left->z * right->z, left->z * right->x - left->x * right->z, left->x * right->y - left->y * right->x);
+    vec3_init(&result, left->y * right->z - left->z * right->y, left->z * right->x - left->x * right->z, left->x * right->y - left->y * right->x);
     return result;
 }

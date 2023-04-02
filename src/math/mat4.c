@@ -52,9 +52,9 @@ struct mat4 mat4_orthographic(float left, float right, float bottom, float top, 
     result.elements[1 + 1 * 4] = 2.0f / (top - bottom);
     result.elements[2 + 2 * 4] = 2.0f / (near - far);
 
-    result.elements[0 + 3 * 4] = (left + right) / (left - right);
-    result.elements[1 + 3 * 4] = (bottom + top) / (bottom - top);
-    result.elements[2 + 3 * 4] = (far + near) / (far - near);
+    result.elements[3 + 0 * 4] = (left + right) / (left - right);
+    result.elements[3 + 1 * 4] = (bottom + top) / (bottom - top);
+    result.elements[3 + 2 * 4] = (far + near) / (far - near);
 
     return result;
 }
@@ -73,8 +73,8 @@ struct mat4 mat4_perspective(float fov, float aspect_ratio, float near, float fa
     result.elements[0 + 0 * 4] = a;
     result.elements[1 + 1 * 4] = q;
     result.elements[2 + 2 * 4] = b;
-    result.elements[3 + 2 * 4] = -1.0f;
-    result.elements[2 + 3 * 4] = c;
+    result.elements[2 + 3 * 4] = -1.0f;
+    result.elements[3 + 2 * 4] = c;
 
     return result;
 }
@@ -118,9 +118,9 @@ void mat4_translation(struct mat4* matrix, const struct vec3* translation)
     struct mat4 result;
     mat4_identity(&result);
 
-    result.elements[0 + 3 * 4] = translation->x;
-    result.elements[1 + 3 * 4] = translation->y;
-    result.elements[2 + 3 * 4] = translation->z;
+    result.elements[3 + 0 * 4] = translation->x;
+    result.elements[3 + 1 * 4] = translation->y;
+    result.elements[3 + 2 * 4] = translation->z;
 
     mat4_mul(matrix, &result);
 }
