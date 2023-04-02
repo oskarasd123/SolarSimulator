@@ -113,7 +113,7 @@ int main(int argc, char** argv)
         } else {
             if (shader_write_index < 0) {
                 fputs("No shader directive found in the shader file!\n", stderr);
-                return EXIT_FAILURE;
+                goto cleanup2;
             }
             strcat(shaders[shader_write_index], line);
         }
@@ -133,7 +133,8 @@ int main(int argc, char** argv)
         glGetShaderInfoLog(vs, length, &length, error_message);
         fprintf(stderr, "Failed to compile vertex shader:\n%s\n", error_message);
         free(error_message);
-        return EXIT_FAILURE;
+        glDeleteShader(vs);
+        goto cleanup2;
     }
 
     uint32_t fs = glCreateShader(GL_FRAGMENT_SHADER);
@@ -147,7 +148,8 @@ int main(int argc, char** argv)
         glGetShaderInfoLog(fs, length, &length, error_message);
         fprintf(stderr, "Failed to compile fragment shader:\n%s\n", error_message);
         free(error_message);
-        return EXIT_FAILURE;
+        glDeleteShader(fs);
+        goto cleanup2;
     }
 
     uint32_t shader_program = glCreateProgram();
@@ -161,7 +163,8 @@ int main(int argc, char** argv)
         char* error_message = calloc(length, sizeof(char));
         fprintf(stderr, "Failed to link shader program:\n%s\n", error_message);
         free(error_message);
-        return EXIT_FAILURE;
+        glDeleteProgram(shader_program);
+        goto cleanup1;
     }
 
     glDeleteShader(vs);
@@ -185,7 +188,7 @@ int main(int argc, char** argv)
         glBindTextureUnit(0, texture);
     } else {
         fputs("Failed to load the texture!\n", stderr);
-        return EXIT_FAILURE;
+        goto cleanup;
     }
 
     stbi_image_free(data);
@@ -195,6 +198,10 @@ int main(int argc, char** argv)
     glBindVertexArray(VAO);
 
     int32_t location = glGetUniformLocation(shader_program, "u_Texture");
+    if (location < 0) {
+        fprintf(stderr, "Failed to find uniform location '%s'!\n", "u_Texture");
+        goto cleanup;
+    }
     glUniform1i(location, 0);
     
     while (!glfwWindowShouldClose(window))
@@ -211,11 +218,14 @@ int main(int argc, char** argv)
         glfwPollEvents();
     }
 
+cleanup:
     glDeleteTextures(1, &texture);
+cleanup1:
+    glDeleteProgram(shader_program);
+cleanup2:
     glDeleteVertexArrays(1, &VAO);
     glDeleteBuffers(1, &VBO);
     glDeleteBuffers(1, &IBO);
-    glDeleteProgram(shader_program);
 
     glfwDestroyWindow(window);
     glfwTerminate();
