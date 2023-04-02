@@ -14,10 +14,10 @@ void vec3_init(struct vec3* vec, float x, float y, float z)
 void vec3_add(struct vec3* vec, struct vec3* other)
 {
 #if VEC3_USE_SIMD
-    __m128 a = _mm_load_ps(vec);
-    __m128 b = _mm_load_ps(other);
+    __m128 a = _mm_load_ps((const float*)vec);
+    __m128 b = _mm_load_ps((const float*)other);
     __m128 res = _mm_add_ps(a, b);
-    _mm_store_ps(vec, res);
+    _mm_store_ps((float*)vec, res);
 #else
     vec->x += other->x;
     vec->y += other->y;
@@ -28,10 +28,10 @@ void vec3_add(struct vec3* vec, struct vec3* other)
 void vec3_sub(struct vec3* vec, struct vec3* other)
 {
 #if VEC3_USE_SIMD
-    __m128 a = _mm_load_ps(vec);
-    __m128 b = _mm_load_ps(other);
+    __m128 a = _mm_load_ps((const float*)vec);
+    __m128 b = _mm_load_ps((const float*)other);
     __m128 res = _mm_sub_ps(a, b);
-    _mm_store_ps(vec, res);
+    _mm_store_ps((float*)vec, res);
 #else
     vec->x -= other->x;
     vec->y -= other->y;
@@ -42,10 +42,10 @@ void vec3_sub(struct vec3* vec, struct vec3* other)
 void vec3_mul(struct vec3* vec, struct vec3* other)
 {
 #if VEC3_USE_SIMD
-    __m128 a = _mm_load_ps(vec);
-    __m128 b = _mm_load_ps(other);
+    __m128 a = _mm_load_ps((const float*)vec);
+    __m128 b = _mm_load_ps((const float*)other);
     __m128 res = _mm_mul_ps(a, b);
-    _mm_store_ps(vec, res);
+    _mm_store_ps((float*)vec, res);
 #else
     vec->x *= other->x;
     vec->y *= other->y;
@@ -56,10 +56,10 @@ void vec3_mul(struct vec3* vec, struct vec3* other)
 void vec3_div(struct vec3* vec, struct vec3* other)
 {
 #if VEC3_USE_SIMD
-    __m128 a = _mm_load_ps(vec);
-    __m128 b = _mm_load_ps(other);
+    __m128 a = _mm_load_ps((const float*)vec);
+    __m128 b = _mm_load_ps((const float*)other);
     __m128 res = _mm_div_ps(a, b);
-    _mm_store_ps(vec, res);
+    _mm_store_ps((float*)vec, res);
 #else
     vec->x /= other->x;
     vec->y /= other->y;

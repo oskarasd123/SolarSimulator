@@ -8,12 +8,18 @@
 #include <GLFW/glfw3.h>
 
 #define STB_IMAGE_IMPLEMENTATION
-#include "vendor/stb_image.h"
+#include "../vendor/stb_image.h"
 
-#include "vertex.h"
+#include "graphics/vertex.h"
+#include "graphics/shader.h"
 
 static void message_callback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, GLchar const* message, void const* user_param);
-static int starts_with(const char* a, const char* b);
+
+enum buffer_id
+{
+    BUFFER_ID_VBO = 0,
+    BUFFER_ID_IBO = 1
+};
 
 int main(int argc, char** argv)
 {
@@ -69,19 +75,16 @@ int main(int argc, char** argv)
         1, 2, 3
     };
 
-    uint32_t VBO;
-    glCreateBuffers(1, &VBO);
-    glNamedBufferData(VBO, sizeof(vertices), vertices, GL_STATIC_DRAW);
-
-    uint32_t IBO;
-    glCreateBuffers(1, &IBO);
-    glNamedBufferData(IBO, sizeof(indices), indices, GL_STATIC_DRAW);
+    uint32_t buffers[2];
+    glCreateBuffers(2, buffers);
+    glNamedBufferData(buffers[BUFFER_ID_VBO], sizeof(vertices), vertices, GL_STATIC_DRAW);
+    glNamedBufferData(buffers[BUFFER_ID_IBO], sizeof(indices), indices, GL_STATIC_DRAW);
 
     uint32_t VAO;
     glCreateVertexArrays(1, &VAO);
 
-    glVertexArrayVertexBuffer(VAO, 0, VBO, 0, sizeof(struct vertex));
-    glVertexArrayElementBuffer(VAO, IBO);
+    glVertexArrayVertexBuffer(VAO, 0, buffers[BUFFER_ID_VBO], 0, sizeof(struct vertex));
+    glVertexArrayElementBuffer(VAO, buffers[BUFFER_ID_IBO]);
 
     glVertexArrayAttribFormat(VAO, 0, 2, GL_FLOAT, GL_FALSE, 0);
     glVertexArrayAttribFormat(VAO, 1, 2, GL_FLOAT, GL_FALSE, offsetof(struct vertex, uv));
@@ -91,86 +94,6 @@ int main(int argc, char** argv)
 
     glVertexArrayAttribBinding(VAO, 0, 0);
     glVertexArrayAttribBinding(VAO, 1, 0);
-
-    FILE* file = fopen("basic.shader", "r");
-
-    fseek(file, 0, SEEK_END);
-    long size = ftell(file);
-    fseek(file, 0, SEEK_SET);
-
-    char* shaders[2];
-    shaders[0] = calloc(size, sizeof(char));
-    shaders[1] = calloc(size, sizeof(char));
-    int32_t shader_write_index = -1;
-
-    char line[256];
-    while (fgets(line, sizeof(line), file)) 
-    {
-        if (starts_with(line, "#shader vertex") == 0) {
-            shader_write_index = 0;
-        } else if (starts_with(line, "#shader fragment") == 0) {
-            shader_write_index = 1;
-        } else {
-            if (shader_write_index < 0) {
-                fputs("No shader directive found in the shader file!\n", stderr);
-                goto cleanup2;
-            }
-            strcat(shaders[shader_write_index], line);
-        }
-    }
-
-    fclose(file);
-
-    uint32_t vs = glCreateShader(GL_VERTEX_SHADER);
-    glShaderSource(vs, 1, (const char**) &shaders[0], NULL);
-    glCompileShader(vs);
-    int success;
-    glGetShaderiv(vs, GL_COMPILE_STATUS, &success);
-    if (!success) {
-        int32_t length;
-        glGetShaderiv(vs, GL_INFO_LOG_LENGTH, &length);
-        char* error_message = calloc(length, sizeof(char));
-        glGetShaderInfoLog(vs, length, &length, error_message);
-        fprintf(stderr, "Failed to compile vertex shader:\n%s\n", error_message);
-        free(error_message);
-        glDeleteShader(vs);
-        goto cleanup2;
-    }
-
-    uint32_t fs = glCreateShader(GL_FRAGMENT_SHADER);
-    glShaderSource(fs, 1, (const char**) &shaders[1], NULL);
-    glCompileShader(fs);
-    glGetShaderiv(fs, GL_COMPILE_STATUS, &success);
-    if (!success) {
-        int32_t length;
-        glGetShaderiv(fs, GL_INFO_LOG_LENGTH, &length);
-        char* error_message = calloc(length, sizeof(char));
-        glGetShaderInfoLog(fs, length, &length, error_message);
-        fprintf(stderr, "Failed to compile fragment shader:\n%s\n", error_message);
-        free(error_message);
-        glDeleteShader(fs);
-        goto cleanup2;
-    }
-
-    uint32_t shader_program = glCreateProgram();
-    glAttachShader(shader_program, vs);
-    glAttachShader(shader_program, fs);
-    glLinkProgram(shader_program);
-    glGetProgramiv(shader_program, GL_LINK_STATUS, &success);
-    if (!success) {
-        int32_t length;
-        glGetProgramiv(shader_program, GL_INFO_LOG_LENGTH, &length);
-        char* error_message = calloc(length, sizeof(char));
-        fprintf(stderr, "Failed to link shader program:\n%s\n", error_message);
-        free(error_message);
-        glDeleteProgram(shader_program);
-        goto cleanup1;
-    }
-
-    glDeleteShader(vs);
-    glDeleteShader(fs);
-    free(shaders[0]);
-    free(shaders[1]);
 
     uint32_t texture;
     glCreateTextures(GL_TEXTURE_2D, 1, &texture);
@@ -188,21 +111,18 @@ int main(int argc, char** argv)
         glBindTextureUnit(0, texture);
     } else {
         fputs("Failed to load the texture!\n", stderr);
-        goto cleanup;
+        abort();
     }
 
     stbi_image_free(data);
 
-    glClearColor(0.2f, 0.3f, 0.8f, 1.0f);
-    glUseProgram(shader_program);
-    glBindVertexArray(VAO);
+    struct shader shader;
+    shader_init(&shader, "basic.shader");
+    shader_bind(&shader);
+    shader_set_1i(&shader, "u_Texture", 0);
 
-    int32_t location = glGetUniformLocation(shader_program, "u_Texture");
-    if (location < 0) {
-        fprintf(stderr, "Failed to find uniform location '%s'!\n", "u_Texture");
-        goto cleanup;
-    }
-    glUniform1i(location, 0);
+    glClearColor(0.2f, 0.3f, 0.8f, 1.0f);
+    glBindVertexArray(VAO);
     
     while (!glfwWindowShouldClose(window))
     {
@@ -218,14 +138,10 @@ int main(int argc, char** argv)
         glfwPollEvents();
     }
 
-cleanup:
     glDeleteTextures(1, &texture);
-cleanup1:
-    glDeleteProgram(shader_program);
-cleanup2:
+    shader_delete(&shader);
     glDeleteVertexArrays(1, &VAO);
-    glDeleteBuffers(1, &VBO);
-    glDeleteBuffers(1, &IBO);
+    glDeleteBuffers(2, buffers);
 
     glfwDestroyWindow(window);
     glfwTerminate();
@@ -274,9 +190,4 @@ static void message_callback(GLenum source, GLenum type, GLuint id, GLenum sever
     }
 
     printf("[%s][%s][%s]: %s\n", src_str, type_str, severity_str, message);
-}
-
-static int starts_with(const char* a, const char* b)
-{
-    return strncmp(a, b, strlen(b));
 }

@@ -1,2 +1,23 @@
-all: src/main.c
-	gcc src/main.c -O0 -ggdb -std=c99 -Wall -Wextra -pedantic -lGL -lm -lGLEW -lglfw -mavx2 -I./ -o main
+CC = gcc
+CFLAGS = -O0 -ggdb -std=c99 -Wall -Wextra -pedantic -mavx2
+LDLIBS = -lm -lGLEW -lglfw -lGL
+
+SRC = src
+OBJ = obj
+BIN = main
+MKDIR = mkdir -p
+SRCs := $(shell find $(SRC) -name "*.c")
+OBJs := $(subst $(SRC), $(OBJ), $(SRCs:.c=.o))
+
+all: $(BIN)
+
+$(BIN): $(OBJs)
+	$(CC) $(CFLAGS) $(CPPFLAGS) $(OBJs) -o $@ $(LDLIBS)
+
+$(OBJs): $(SRCs)
+	$(MKDIR) $(dir $@)
+	$(CC) $(CFLAGS) $(CPPFLAGS) -c $(subst $(OBJ), $(SRC), $(@:.o=.c)) -o $@
+
+clean:
+	$(RM) -R $(BIN)
+	$(RM) -R $(OBJ)
