@@ -7,6 +7,11 @@
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 
+#include "math/vec2.h"
+#include "math/vec3.h"
+#include "math/vec4.h"
+#include "math/mat4.h"
+
 #include "graphics/vertex.h"
 #include "graphics/shader.h"
 #include "graphics/texture.h"
@@ -64,10 +69,10 @@ int main(int argc, char** argv)
     printf("Vendor: %s\nVersion: %s\nRenderer: %s\n", vendor_str, version_str, renderer_str);
 
     struct vertex vertices[] = {
-        {.pos = {.x =  0.5f, .y =  0.5f}, .uv = {.x = 1.0f, .y = 1.0f}},
-        {.pos = {.x =  0.5f, .y = -0.5f}, .uv = {.x = 1.0f, .y = 0.0f}},
-        {.pos = {.x = -0.5f, .y = -0.5f}, .uv = {.x = 0.0f, .y = 0.0f}},
-        {.pos = {.x = -0.5f, .y =  0.5f}, .uv = {.x = 0.0f, .y = 1.0f}}
+        {.pos = {.x =  0.5f, .y =  0.5f, .z = 0.0f}, .uv = {.x = 1.0f, .y = 1.0f}},
+        {.pos = {.x =  0.5f, .y = -0.5f, .z = 0.0f}, .uv = {.x = 1.0f, .y = 0.0f}},
+        {.pos = {.x = -0.5f, .y = -0.5f, .z = 0.0f}, .uv = {.x = 0.0f, .y = 0.0f}},
+        {.pos = {.x = -0.5f, .y =  0.5f, .z = 0.0f}, .uv = {.x = 0.0f, .y = 1.0f}}
     };
 
     uint32_t indices[] = {
@@ -85,7 +90,7 @@ int main(int argc, char** argv)
 
     struct vertex_layout layout;
     vertex_layout_init(&layout);
-    vertex_layout_add(&layout, 2, GL_FLOAT, false, 0);
+    vertex_layout_add(&layout, 3, GL_FLOAT, false, 0);
     vertex_layout_add(&layout, 2, GL_FLOAT, false, offsetof(struct vertex, uv));
     
     vertex_array_add(&vao, &layout);
@@ -100,11 +105,43 @@ int main(int argc, char** argv)
     shader_bind(&shader);
     shader_set_1i(&shader, "u_Texture", 0);
 
+    struct mat4 transform;
+    mat4_identity(&transform);
+    struct vec3 translation;
+    vec3_init(&translation, 0.5f, -0.25f, 0.0f);
+    mat4_translation(&transform, &translation);
+    struct vec3 scale;
+    vec3_init(&scale, 4.0f, 4.0f, 4.0f);
+    mat4_scale(&transform, &scale);
+    shader_set_mat4(&shader, "u_Transform", &transform);
+
+    struct mat4 projection = mat4_perspective(70, 960.0f / 540.0f, 0.0f, 1.0f);
+    shader_set_mat4(&shader, "u_Projection", &projection);
+
+    struct vec3 camera;
+    vec3_init(&camera, 5.0f, 5.0f, 0.0f);
+    struct vec3 object;
+    vec3_init(&object, 0.0f, 0.0f, 0.0f);
+    struct vec3 up;
+    vec3_init(&up, 0.0f, 1.0f, 0.0f);
+    struct mat4 view = mat4_look_at(camera, object, up);
+    
+    struct vec3 x_axis;
+    vec3_init(&x_axis, 1.0f, 0.0f, 0.0f);
+    mat4_rotation(&view, 90.0f, &x_axis);
+
+    shader_set_mat4(&shader, "u_View", &view);
+
     glClearColor(0.2f, 0.3f, 0.8f, 1.0f);
     
     while (!glfwWindowShouldClose(window))
     {
         glClear(GL_COLOR_BUFFER_BIT);
+
+        struct vec3 axis;
+        vec3_init(&axis, 0.0f, 0.0f, 1.0f);
+        mat4_rotation(&transform, (float)glfwGetTime(), &axis);
+        shader_set_mat4(&shader, "u_Transform", &transform);
 
         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 

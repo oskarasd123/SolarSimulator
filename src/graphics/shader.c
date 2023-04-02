@@ -75,6 +75,12 @@ void shader_set_4f(struct shader* shader, const char* name, const struct vec4* v
     glUniform4f(location, value->x, value->y, value->z, value->w);
 }
 
+void shader_set_mat4(struct shader* shader, const char* name, const struct mat4* matrix)
+{
+    int location = get_uniform_location(shader, name);
+    glUniformMatrix4fv(location, 1, GL_FALSE, matrix->elements);
+}
+
 static int get_uniform_location(struct shader* shader, const char* name)
 {
     /* TODO: HashTable */
