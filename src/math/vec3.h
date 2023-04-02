@@ -1,7 +1,7 @@
 #ifndef VEC3_H
 #define VEC3_H
 
-#define VEC3_USE_SIMD 0
+#include "../config.h"
 
 struct vec3
 {
@@ -9,6 +9,7 @@ struct vec3
     float y;
     float z;
 
+    /* Padding to align to 128 bits */
 #if VEC3_USE_SIMD
     float _;
 #endif

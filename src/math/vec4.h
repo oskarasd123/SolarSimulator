@@ -1,7 +1,7 @@
 #ifndef VEC4_H
 #define VEC4_H
 
-#define VEC4_USE_SIMD 0
+#include "../config.h"
 
 struct vec4
 {
