@@ -105,47 +105,48 @@ int main(int argc, char** argv)
     shader_bind(&shader);
     shader_set_1i(&shader, "u_Texture", 0);
 
-    struct mat4 projection = mat4_perspective(35, 960.0f / 540.0f, -1.0f, 1.0f);
-    shader_set_mat4(&shader, "u_Projection", &projection);
+    struct mat4 identity;
+    mat4_identity(&identity);
+
+    struct mat4 projection = mat4_orthographic(0.0f, 16.0f, 0.0f, 9.0f, -1.0f, 1.0f);
+    shader_set_mat4(&shader, "u_Projection", &identity);
 
     struct vec3 camera;
-    vec3_init(&camera, 20.0f, 5.0f, 0.0f);
+    vec3_init(&camera, 0.0f, 0.0f, 0.0f);
     struct vec3 object;
     vec3_init(&object, 0.0f, 0.0f, 0.0f);
     struct vec3 up;
     vec3_init(&up, 0.0f, 1.0f, 0.0f);
-    struct mat4 view = mat4_look_at(camera, object, up);
     
+    struct mat4 view = mat4_look_at(camera, object, up);
     struct vec3 rot_angle;
-    vec3_init(&rot_angle, 90.0f, 0.0f, 0.0f);
+    vec3_init(&rot_angle, 0.0f, 0.0f, 0.0f);
     mat4_rotation(&view, &rot_angle);
 
-    shader_set_mat4(&shader, "u_View", &view);
+    shader_set_mat4(&shader, "u_View", &identity);
 
     glClearColor(0.2f, 0.3f, 0.8f, 1.0f);
-    
-    struct mat4 transform;
-    mat4_identity(&transform);
-    
-    struct vec3 axis;
-    vec3_init(&axis, 0.0f, 0.0f, 135.0f);
-    mat4_rotation(&transform, &axis);
-
-    struct vec3 translation;
-    vec3_init(&translation, 0.5f, -0.25f, 0.0f);
-    mat4_translation(&transform, &translation);
-    
-
-
-    struct vec3 scale;
-    vec3_init(&scale, 4.0f, 4.0f, 4.0f);
-    mat4_scale(&transform, &scale);
-
-    shader_set_mat4(&shader, "u_Transform", &transform);
 
     while (!glfwWindowShouldClose(window))
     {
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+        struct mat4 transform;
+        mat4_identity(&transform);
+        
+        struct vec3 translation;
+        vec3_init(&translation, 0.0f, 0.0f, 0.0f);
+        mat4_translation(&transform, &translation);
+        
+        struct vec3 axis;
+        vec3_init(&axis, 0.0f, 0.0f, glfwGetTime() * 100.0f);
+        mat4_rotation(&transform, &axis);
+
+        struct vec3 scale;
+        vec3_init(&scale, 1.0f, 1.0f, 1.0f);
+        mat4_scale(&transform, &scale);
+
+        shader_set_mat4(&shader, "u_Transform", &transform);
 
         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 

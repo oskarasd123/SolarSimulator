@@ -1,5 +1,5 @@
 CC = gcc
-CFLAGS = -O0 -ggdb -std=c11 -Wall -Wextra -pedantic -mavx2 -Werror
+CFLAGS = -O0 -ggdb -std=c11 -Wall -Wextra -pedantic -mavx2
 LDLIBS = -lm -lGLEW -lglfw -lGL
 
 SRC = src
