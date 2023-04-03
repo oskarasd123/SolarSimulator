@@ -74,7 +74,7 @@ int main(int argc, char** argv)
         {.pos = {.x = -0.5f, .y = -0.5f, .z = 0.0f}, .uv = {.x = 0.0f, .y = 0.0f}},
         {.pos = {.x = -0.5f, .y =  0.5f, .z = 0.0f}, .uv = {.x = 0.0f, .y = 1.0f}}
     };
-
+    
     uint32_t indices[] = {
         0, 1, 3,
         1, 2, 3
@@ -108,17 +108,18 @@ int main(int argc, char** argv)
     struct mat4 identity;
     mat4_identity(&identity);
 
-    struct mat4 projection = mat4_orthographic(0.0f, 16.0f, 0.0f, 9.0f, -1.0f, 1.0f);
-    shader_set_mat4(&shader, "u_Projection", &identity);
+    struct mat4 projection = mat4_perspective(45.0f, 960.0f / 540.0f, 0.1f, 100.0f);
+    shader_set_mat4(&shader, "u_Projection", &projection);
 
     struct vec3 camera;
-    vec3_init(&camera, 0.0f, 0.0f, 0.0f);
+    vec3_init(&camera, 0.0f, 1.0f, -5.0f);
     struct vec3 object;
     vec3_init(&object, 0.0f, 0.0f, 0.0f);
     struct vec3 up;
     vec3_init(&up, 0.0f, 1.0f, 0.0f);
     
     struct mat4 view = mat4_look_at(camera, object, up);
+    //mat4_mul(&view, &look_at_mat);
     struct vec3 rot_angle;
     vec3_init(&rot_angle, 0.0f, 0.0f, 0.0f);
     mat4_rotation(&view, &rot_angle);
@@ -131,20 +132,22 @@ int main(int argc, char** argv)
     {
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+
         struct mat4 transform;
         mat4_identity(&transform);
         
+        struct vec3 axis;
+        const float time = glfwGetTime() * 100.0f;
+        vec3_init(&axis, 0.0f, 0.0f, time);
+        mat4_rotation(&transform, &axis);
+
         struct vec3 scale;
-        vec3_init(&scale, 1.0f, 1.0f, 1.0f);
+        vec3_init(&scale, 0.5f, 0.5f, 0.5f);
         mat4_scale(&transform, &scale);
 
         struct vec3 translation;
         vec3_init(&translation, 0.0f, 0.0f, 0.0f);
         mat4_translation(&transform, &translation);
-        
-        struct vec3 axis;
-        vec3_init(&axis, 0.0f, 0.0f, glfwGetTime() * 100.0f);
-        mat4_rotation(&transform, &axis);
 
         shader_set_mat4(&shader, "u_Transform", &transform);
 

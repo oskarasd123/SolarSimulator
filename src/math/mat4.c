@@ -29,6 +29,7 @@ void mat4_identity(struct mat4* matrix)
 void mat4_mul(struct mat4* left, const struct mat4* right)
 {
     /* TODO: Vectorize (SIMD) */
+    float data[16];
     for (uint32_t row = 0; row < 4; ++row)
     {
         for (uint32_t col = 0; col < 4; ++col)
@@ -38,9 +39,10 @@ void mat4_mul(struct mat4* left, const struct mat4* right)
             {
                 sum += left->elements[e + row * 4] * right->elements[col + e * 4];
             }
-            left->elements[col + row * 4] = sum;
+            data[col + row * 4] = sum;
         }
     }
+    memcpy(left->elements, data, sizeof(data));
 }
 
 struct mat4 mat4_orthographic(float left, float right, float bottom, float top, float near, float far)
